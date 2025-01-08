@@ -1,12 +1,18 @@
 package database
 
-import "github.com/awalshy/db-backup-utility/pkg/config"
+import (
+	"database/sql"
+	"os"
+
+	"github.com/awalshy/db-backup-utility/pkg/config"
+)
 
 type Database interface {
 	Connect() error
 	ValidateCredentials() error
 	LoadConfig(config *config.Config) error
 	Backup() error
+	Disconnect()
 }
 
 type database struct {
@@ -16,6 +22,8 @@ type database struct {
 	user     string
 	password string
 	dbname   string
+	db		 *sql.DB
+	bkpFile	 *os.File
 }
 
 var (
@@ -25,6 +33,9 @@ var (
 func GetDatabase(dbms string) Database {
 	if dbms == "postgres" {
 		return getPostgresDB()
+	}
+	if dbms == "mysql" {
+		return getMySQLDB()
 	}
 	return nil
 }
